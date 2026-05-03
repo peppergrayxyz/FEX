@@ -53,9 +53,9 @@ public:
       // Third, assign the result to std::function, ensuring it's indeed
       // allocation-free by checking for nothrow-constructibility
       using T = std::decay_t<decltype(wrapped_lambda)>;
-      static_assert(std::is_nothrow_move_constructible<T>::value,   "This implementation of std::function "
-                                                                    "does not support implementing "
-                                                                    "fextl::move_only_function");
+      static_assert(std::is_nothrow_move_constructible_v<T>, "This implementation of std::function "
+                                                             "does not support implementing "
+                                                             "fextl::move_only_function");
       internal = std::move_if_noexcept(wrapped_lambda);
 
       // Finally, if a destructor must be called, generate a pointer to its destructor
