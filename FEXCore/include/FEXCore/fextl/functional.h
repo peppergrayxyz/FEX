@@ -47,15 +47,16 @@ public:
 
       // Second, wrap the relocated argument in a single-capture lambda
       auto wrapped_lambda = [moved_lambda](Args... args) {
-        return (*moved_lambda)(std::forward<Args>(args)...);
+        return std::invoke(*moved_lambda, std::forward<Args>(args)...);
       };
 
       // Third, assign the result to std::function, ensuring it's indeed
       // allocation-free by checking for nothrow-constructibility
-      static_assert(noexcept(internal = std::move(wrapped_lambda)), "This implementation of std::function "
+      using T = std::decay_t<decltype(wrapped_lambda)>;
+      static_assert(std::is_nothrow_move_constructible<T>::value,   "This implementation of std::function "
                                                                     "does not support implementing "
                                                                     "fextl::move_only_function");
-      internal = std::move(wrapped_lambda);
+      internal = std::move_if_noexcept(wrapped_lambda);
 
       // Finally, if a destructor must be called, generate a pointer to its destructor
       if constexpr (!std::is_trivially_destructible_v<Fnoref>) {
